@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miori Shop - รับทำ ป้าย ลายน้ำ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'mitr': ['Mitr', 'sans-serif'],
+                        'fredoka': ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        'pj-bg': '#fff5f7',          /* ครีมนมพาสเทลอมชมพู */
+                        'pj-blue-light': '#ffccd5',  /* ชมพูอ่อนพาสเทล */
+                        'pj-blue-main': '#ff85a2',   /* ชมพูสดใส */
+                        'pj-blue-dark': '#705446',   /* น้ำตาลช็อกโกแลตนุ่มๆ */
+                        'pj-yellow-light': '#fff3c4',/* เหลืองอ่อนพาสเทล */
+                        'pj-yellow-main': '#ffe066', /* เหลืองเนยสดใส */
+                        'pj-pink': '#ffb3c6',        /* ชมพูพาสเทลน่ารัก */
+                        'pj-white': '#ffffff',
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(255, 133, 162, 0.25)',
+                        'hard': '4px 4px 0px 0px rgba(112, 84, 70, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Mitr', sans-serif; background-color: #fff5f7; overflow-x: hidden; color: #705446; }
+        .font-eng { font-family: 'Fredoka', sans-serif; }
+        
+        /* Custom UI Shapes matching Reference 2 */
+        .shape-header {
+            border-radius: 40px 100px 100px 40px;
+            position: relative;
+        }
+        .shape-info {
+            border-radius: 20px;
+        }
+        .shape-bubble-left {
+            border-radius: 20px;
+            position: relative;
+        }
+        .shape-bubble-left::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 15px 0 15px 20px;
+            border-color: transparent transparent transparent #ff85a2;
+        }
+        .shape-nota {
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ffccd5; border-radius: 10px; }
+        
+        /* Modal Animation */
+        .modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal.active { opacity: 1; visibility: visible; }
+        .modal.inactive { opacity: 0; visibility: hidden; }
+        .modal-content { transition: transform 0.3s ease; transform: scale(0.95); }
+        .modal.active .modal-content { transform: scale(1); }
+
+        /* Background floating shapes */
+        .bg-shapes {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        /* ซ่อนปุ่ม Instagram ด้วย CSS เพื่อรักษาสภาพโครงสร้าง HTML Element เดิม */
+        .instagram-link-btn {
+            display: none !important;
+        }
+
+        .cute-file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased relative selection:bg-pj-yellow-main selection:text-pj-blue-dark">
+
+    <!-- Audio Player Hidden Element (YouTube Iframe with Loop API) -->
+    <iframe id="bg-music-iframe" style="display:none;" width="560" height="315" src="https://www.youtube.com/embed/BX7z7AvTCNw?enablejsapi=1&loop=1&playlist=BX7z7AvTCNw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <!-- Floating Music Toggle Button (ฝั่งซ้าย ขนาดเล็กลง) -->
+    <button id="music-toggle-btn" onclick="toggleMusic()" class="fixed top-4 left-4 z-50 bg-pj-white border-2 border-pj-pink p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 flex items-center justify-center text-pj-pink group" title="เปิด/ปิดเพลง">
+        <svg id="music-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <span id="music-status-dot" class="absolute top-0.5 right-0.5 w-2 h-2 bg-gray-400 rounded-full border border-white"></span>
+    </button>
+
+    <!-- Admin Panel Floating Button Bottom-Left -->
+    <button onclick="openAdminAuthModal()" class="fixed bottom-4 left-4 z-50 bg-pj-pink text-pj-white p-3 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 flex items-center gap-1.5 text-xs font-bold border-2 border-pj-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>หลังบ้าน</span>
+    </button>
+
+    <!-- Background Decors -->
+    <div class="bg-shapes">
+        <svg class="absolute top-10 -left-10 w-64 h-64 text-pj-blue-light opacity-50" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="currentColor" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,81.3,-46.3C90.8,-33.5,96.8,-18,95.5,-2.9C94.2,12.2,85.6,26.9,75.3,39.6C65,52.3,53,63.1,39.4,70.5C25.8,77.9,10.6,81.9,-4.3,81.4C-19.2,80.9,-33.7,75.9,-47.5,68.4C-61.3,60.9,-74.3,50.9,-82.4,37.6C-90.5,24.3,-93.7,7.7,-91.4,-8.2C-89.1,-24.1,-81.3,-39.3,-69.9,-51.1C-58.5,-62.9,-43.5,-71.3,-29.1,-75.7C-14.7,-80.1, -1.2,-80.5, 12.5,-78.9C26.2,-77.3, 30.6,-83.6, 44.7,-76.4Z" transform="translate(100 100) scale(1.1)" />
+        </svg>
+        <svg class="absolute top-[40%] right-[-50px] w-72 h-72 text-pj-yellow-light opacity-60" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="currentColor" d="M51.8,-70.5C65.5,-60.8,73.9,-43.8,77.9,-26.8C81.9,-9.8,81.5,7.2,74.9,21.8C68.3,36.4,55.5,48.6,41.2,57.1C26.9,65.6,11.1,70.4,-4.1,76.3C-19.3,82.2,-33.9,89.2,-46.9,82.9C-59.9,76.6,-71.3,57,-76.3,38.2C-81.3,19.4,-79.9,1.4,-73.4,-14.2C-66.9,-29.8,-55.3,-43,-41.8,-52.5C-28.3,-62,-14.1,-67.8,1.5,-70.1C17.1,-72.4,38.1,-80.2,51.8,-70.5Z" transform="translate(100 100)" />
+        </svg>
+        <svg class="absolute top-[20%] left-[10%] w-12 h-12 text-pj-pink opacity-40 animate-pulse" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        <svg class="absolute bottom-[25%] left-[-30px] w-48 h-48 text-pj-blue-main opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M42.7,-73.4C55.9,-65.7,67.7,-54.6,76.5,-41.2C85.3,-27.8,91.1,-12.1,89.5,2.9C87.9,17.9,78.9,32.2,68.2,44.1C57.5,56,45.1,65.4,31.4,71.5C17.7,77.6,2.7,80.4,-11.9,79.5C-26.5,78.6,-40.7,74,-53.1,65.6C-65.5,57.2,-76.1,45,-81.6,30.6C-87.1,16.2,-87.5,-0.4,-82.6,-15.5C-77.7,-30.6,-67.5,-44.2,-54.6,-52.3C-41.7,-60.4,-26.1,-63,-11.5,-63.9C3.1,-64.8,17.7,-64,29.5,-71.1C41.3,-78.2,50.3,-83.2,42.7,-73.4Z" transform="translate(100 100)"/></svg>
+        <svg class="absolute bottom-[10%] right-[5%] w-16 h-16 text-pj-yellow-main opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    </div>
+
+    <main class="max-w-[500px] mx-auto min-h-screen px-4 py-12 relative z-10 flex flex-col gap-8">
+
+        <!-- Header Section -->
+        <section class="relative">
+            <div class="absolute -right-4 top-[80%] w-12 h-32 border-r-4 border-b-4 border-pj-blue-light rounded-br-[40px] z-0"></div>
+            
+            <div class="shape-header bg-pj-blue-light p-8 pr-16 shadow-soft z-10 relative mt-4 ml-[-20px] mr-4">
+                <div class="absolute -top-10 -right-4 z-30 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <svg class="absolute -top-4 -left-5 w-12 h-12 text-pj-yellow-main drop-shadow-md z-40" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                    
+                    <div class="w-32 h-36 bg-pj-white p-2.5 pb-8 rounded shadow-lg border border-pj-blue-light/50 flex flex-col items-center relative">
+                        <div class="w-full h-full bg-pj-blue-light/20 overflow-hidden rounded-sm">
+                            <img id="site-logo-img" src="https://placehold.co/150x150/ffb3c6/ffffff?text=Miori" alt="โลโก้" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <svg class="absolute top-8 right-20 w-5 h-5 text-pj-yellow-main opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg class="absolute bottom-4 right-12 w-6 h-6 text-pj-white opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><circle cx="12" cy="12" r="10"/></svg>
+                <svg class="absolute top-6 left-6 w-4 h-4 text-pj-white opacity-80" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+
+                <h1 class="font-eng text-5xl text-pj-white font-bold tracking-wide drop-shadow-md mb-2 relative z-10">Miori<br><span class="text-3xl ml-4">Shop</span></h1>
+                
+                <div class="inline-flex items-center gap-2 bg-pj-yellow-main text-pj-blue-dark font-eng font-bold px-3 py-1 rounded-full text-xs shadow-md mt-2 relative z-10 border border-pj-white">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span>OPEN 10:00 a.m - Close 22:00 p.m</span>
+                </div>
+
+                <br>
+                <div class="inline-block bg-pj-blue-dark text-pj-white font-eng px-4 py-1.5 rounded-full text-sm mt-2 shadow-md relative z-10">
+                    Welcome to my shop
+                </div>
+            </div>
+            <p class="mt-6 ml-6 text-sm font-medium pr-4 relative z-10">
+                ร้านมิรับทำ ป้าย ลายน้ำ เริ่มต้น 39.-
+            </p>
+        </section>
+
+        <!-- Banner Section (ขนาด 2400*800) -->
+        <section class="mx-4 relative">
+            <div class="bg-pj-white p-2 rounded-3xl shadow-soft border-2 border-pj-blue-light overflow-hidden">
+                <div class="relative w-full rounded-2xl overflow-hidden aspect-[3/1] bg-pj-blue-light/20">
+                    <img id="site-banner-img" src="https://placehold.co/2400x800/ffccd5/705446?text=Miori+Shop+Banner" alt="แบรนเนอร์" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </section>
+
+        <!-- ปุ่มเช็คคิวงาน (Status Bar / ปุ่มเช็คคิวงานแบบเส้นประ) -->
+        <section class="mx-4 relative">
+            <button onclick="openModal('modal-queue-view')" class="w-full bg-gradient-to-r from-pj-pink via-pj-yellow-main to-pj-blue-light p-1 rounded-3xl shadow-soft hover:scale-[1.02] transition-transform duration-300">
+                <div class="bg-pj-white rounded-[22px] px-6 py-4 flex items-center justify-between border-2 border-dashed border-pj-pink">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-pj-yellow-light flex items-center justify-center text-pj-blue-dark shadow-sm shrink-0">
+                            <svg class="w-6 h-6 text-pj-blue-main" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-eng text-lg font-bold text-pj-blue-dark leading-tight flex items-center gap-1">Check Order Queue 🎀</h3>
+                            <p class="text-xs text-pj-blue-dark/70 font-medium">กดที่นี่เพื่อเช็คสถานะและคิวงานของคุณ</p>
+                        </div>
+                    </div>
+                    <div class="bg-pj-pink text-pj-white p-2 rounded-full shadow-sm hover:rotate-12 transition-transform">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                </div>
+            </button>
+        </section>
+
+        <!-- Product Cards (3 ช่อง) -->
+        <section class="mx-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-pj-pink" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <h3 class="font-eng text-lg font-bold text-pj-blue-dark">Featured Products</h3>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <!-- Slot 1: Block -->
+                <a id="prod-link-1" href="https://drive.google.com/drive/folders/10wVjpHKCr8rMZ-UoCd5G_ALc13AUC1Qk" target="_blank" class="bg-pj-white p-2 rounded-2xl border-2 border-pj-pink/50 shadow-sm flex flex-col items-center hover:scale-105 transition-transform">
+                    <div class="w-full aspect-square rounded-xl overflow-hidden bg-pj-pink/20 mb-2 border border-pj-pink/30">
+                        <img id="prod-img-1" src="https://placehold.co/1280x1280/ffb3c6/ffffff?text=Block" alt="Block" class="w-full h-full object-cover">
+                    </div>
+                    <span class="w-full bg-pj-pink text-pj-white text-center py-1.5 rounded-xl text-xs font-bold font-eng">
+                        Block
+                    </span>
+                </a>
+
+                <!-- Slot 2: Toon -->
+                <a id="prod-link-2" href="https://drive.google.com/drive/folders/1T36yZKLHN5huKfwu1NYW_PVLLsswHTiD" target="_blank" class="bg-pj-white p-2 rounded-2xl border-2 border-pj-yellow-main shadow-sm flex flex-col items-center hover:scale-105 transition-transform">
+                    <div class="w-full aspect-square rounded-xl overflow-hidden bg-pj-yellow-light/50 mb-2 border border-pj-yellow-main/30">
+                        <img id="prod-img-2" src="https://placehold.co/1280x1280/ffe066/705446?text=Toon" alt="Toon" class="w-full h-full object-cover">
+                    </div>
+                    <span class="w-full bg-pj-yellow-main text-pj-blue-dark text-center py-1.5 rounded-xl text-xs font-bold font-eng">
+                        Toon
+                    </span>
+                </a>
+
+                <!-- Slot 3: Descor -->
+                <a id="prod-link-3" href="https://drive.google.com/drive/folders/1YLsW06GXE_ENus4ad8AUNU4FEM74Z2vl" target="_blank" class="bg-pj-white p-2 rounded-2xl border-2 border-pj-blue-light shadow-sm flex flex-col items-center hover:scale-105 transition-transform">
+                    <div class="w-full aspect-square rounded-xl overflow-hidden bg-pj-blue-light/30 mb-2 border border-pj-blue-light/30">
+                        <img id="prod-img-3" src="https://placehold.co/1280x1280/ffccd5/705446?text=Descor" alt="Descor" class="w-full h-full object-cover">
+                    </div>
+                    <span class="w-full bg-pj-blue-light text-pj-blue-dark text-center py-1.5 rounded-xl text-xs font-bold font-eng">
+                        Descor
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section class="relative mr-8 mt-4">
+            <svg class="absolute -right-6 -bottom-4 w-10 h-10 text-pj-yellow-main opacity-80 z-20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <svg class="absolute top-2 right-2 w-4 h-4 text-pj-blue-light opacity-50 z-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+
+            <div class="absolute -left-6 top-[20%] w-6 h-full border-l-4 border-t-4 border-pj-pink rounded-tl-[40px] z-0 opacity-60"></div>
+
+            <div class="shape-bubble-left bg-pj-blue-main p-5 shadow-soft z-10 text-pj-white">
+                <svg class="absolute top-4 right-4 w-6 h-6 text-pj-yellow-main opacity-90 transform rotate-12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg class="absolute bottom-2 left-6 w-4 h-4 text-pj-white opacity-40 transform -rotate-12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+
+                <div class="flex items-center gap-2 mb-3">
+                    <h2 class="font-eng text-2xl font-bold tracking-wide">Portfolio</h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <p class="text-sm mb-4">ตัวอย่างงานร้าน miori คลิ๊กดูหมวดหมู่เพื่อดูตัวอย่างงานได้เลยนะคะ</p>
+                
+                <div class="flex flex-col gap-2">
+                    <a href="https://drive.google.com/drive/folders/1qTde2_bAUL_qgsYfFlTgKC8TbHwmgtQe" target="_blank" class="bg-pj-white text-pj-blue-dark py-2 px-4 rounded-full text-sm font-semibold flex justify-between items-center hover:bg-pj-yellow-light transition-colors">
+                        หมวดหมู่: ลายน้ำ
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="https://drive.google.com/drive/folders/1UTDDPZxwmZ9Bxld-wkRuboXRBQwRbe7g" target="_blank" class="bg-pj-white text-pj-blue-dark py-2 px-4 rounded-full text-sm font-semibold flex justify-between items-center hover:bg-pj-yellow-light transition-colors">
+                        หมวดหมู่: ป้ายแนวน่ารัก
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="https://drive.google.com/drive/folders/1Of_4oKv6n32tAccEwbe09IyeKAAIdcAk" target="_blank" class="bg-pj-white text-pj-blue-dark py-2 px-4 rounded-full text-sm font-semibold flex justify-between items-center hover:bg-pj-yellow-light transition-colors">
+                        หมวดหมู่: ป้ายแนวสว่าง
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="https://drive.google.com/drive/folders/1Bg8M3w0HpGnXAGAb8At4PkxMNawNCzJg" target="_blank" class="bg-pj-white text-pj-blue-dark py-2 px-4 rounded-full text-sm font-semibold flex justify-between items-center hover:bg-pj-yellow-light transition-colors">
+                        หมวดหมู่: ป้ายแนวมืด
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="https://drive.google.com/drive/folders/1AWD8J5JtZBSlQsgMHzVazxVKgum0810C" target="_blank" class="bg-pj-white text-pj-blue-dark py-2 px-4 rounded-full text-sm font-semibold flex justify-between items-center hover:bg-pj-yellow-light transition-colors">
+                        หมวดหมู่: ป้ายเรทราคา
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing & Add-ons Section -->
+        <section class="ml-4 mr-4 mt-2 relative">
+            <svg class="absolute -right-2 top-32 w-12 h-12 text-pj-blue-light opacity-50 z-0" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="4" transform="rotate(15 12 12)"/></svg>
+            <svg class="absolute -left-2 bottom-10 w-8 h-8 text-pj-pink opacity-40 z-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+
+            <div class="bg-pj-white rounded-[30px] p-1 shadow-soft border border-pj-pink/40 relative z-10">
+                <svg class="absolute -top-4 right-10 w-8 h-8 text-pj-yellow-main z-20 drop-shadow-sm transform rotate-12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+
+                <div class="bg-pj-yellow-light/40 rounded-[26px] p-5">
+                    <div class="text-center mb-4">
+                        <div class="inline-flex bg-pj-yellow-main text-pj-blue-dark font-eng font-bold px-5 py-1.5 rounded-full mb-2 shadow-sm">
+                            Pricing
+                        </div>
+                        <h3 class="text-xl font-bold">ราคาเริ่มต้น 39.-</h3>
+                        <p class="text-xs text-pj-blue-dark/70">(สำหรับลายน้ำแนวน่ารัก ไว้ใส่ในตัวอย่างงานเท่านั้น)</p>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-pj-white p-3 rounded-xl shadow-sm border border-pj-white">
+                            <p class="font-semibold text-pj-blue-main mb-1">เรทราคาต่างๆ</p>
+                            <ul class="text-xs space-y-1">
+                                <li class="flex justify-between items-center"><span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ป้ายแนวน่ารัก</span> <span class="font-bold">เริ่มต้น 59.-</span></li>
+                                <li class="flex justify-between items-center"><span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ป้ายแนวสว่าง</span> <span class="font-bold">เริ่มต้น 89.-</span></li>
+                                <li class="flex justify-between items-center"><span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ป้ายแนวมืด</span> <span class="font-bold">เริ่มต้น 89.-</span></li>
+                                <li class="flex justify-between items-center"><span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ป้ายเรทราคา</span> <span class="font-bold">เริ่มต้น 99.-</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-pj-white p-3 rounded-xl shadow-sm border border-pj-white">
+                            <span class="font-medium text-xs">Add on มีราคาเหมา 3 ป้ายขึ้นไป</span>
+                            <span class="font-bold text-pj-blue-main">พิเศษ</span>
+                        </div>
+
+                        <div class="bg-pj-pink/20 p-3 rounded-xl text-xs space-y-1">
+                            <p class="font-semibold text-pj-blue-dark flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> แก้ไขข้อมูลหลังส่งตรวจสอบ ฟรี 1 ครั้ง</p>
+                            <p class="text-pj-blue-dark/80 pl-5">หลังส่งลิงก์งานแล้ว หากมีการแก้ไขเพิ่มเติม:</p>
+                            <ul class="pl-5">
+                                <li>- คิดค่าปรับแก้จุดละ 10.- (ข้อความ)</li>
+                                <li>- เปลี่ยนฟอนต์หัวป้าย 39.-</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-[10px] text-center mt-3 text-pj-blue-dark/60 px-4">
+                หมายเหตุ: ราคาขึ้นอยู่กับความละเอียดของข้อมูลและปริมาณเนื้อหา ทางร้านขอสงวนสิทธิ์ในการประเมินราคาตามความเหมาะสมนะคะ
+            </p>
+        </section>
+
+        <!-- Process & Rules -->
+        <section class="mx-4 space-y-4">
+            <div class="shape-nota bg-pj-white border-2 border-pj-pink p-5 shadow-sm">
+                <svg class="absolute -top-3 -right-2 w-7 h-7 text-pj-pink z-10 drop-shadow-sm transform rotate-12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-eng text-xl font-bold text-pj-blue-main uppercase">Process & Conditions</h3>
+                        <p class="text-xs font-medium text-pj-blue-dark/70">ขั้นตอนและเงื่อนไข</p>
+                    </div>
+                    <div class="bg-pj-yellow-light text-pj-blue-dark px-2 py-1 rounded-lg">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                </div>
+                <ul class="text-xs space-y-2 pl-4 list-disc marker:text-pj-blue-main">
+                    <li>ตามปกติรองาน 4–8 ชั่วโมง แล้วแต่คิวของวันนั้น ๆ</li>
+                    <li><span class="font-bold text-pj-blue-main">งานเร่ง *2 ของราคา</span></li>
+                    <li>แจ้งรายละเอียดงานให้ครบก่อนเริ่มงาน</li>
+                    <li>เน้นย้ำหลังจากส่งงานให้รีเช็ค ตอบกลับภายในไม่เกิน 30 นาที</li>
+                    <li>หากส่งงานเรียบร้อยแล้ว ลูกค้าต้องการปรับเปลี่ยนงาน ต้องสั่งใหม่เท่านั้น</li>
+                    <li>หากทางร้านทำผิดบรีฟจะทำการแก้ไขให้ฟรี</li>
+                    <li>ห้ามนำไฟล์งานหรือองค์ประกอบภายในงานไปแจกต่อ ขายต่อ หรือส่งต่อให้บุคคลอื่นโดยไม่ได้รับอนุญาต</li>
+                    <li>การสั่งงานถือว่ายอมรับเงื่อนไขของร้านแล้ว กรุณาอ่านรายละเอียดให้ครบก่อนสั่งงานนะคะ</li>
+                </ul>
+
+                <h4 class="font-bold text-sm mt-4 mb-2 bg-pj-yellow-light inline-block px-2 py-0.5 rounded text-pj-blue-dark">ขั้นตอนการสั่งงาน</h4>
+                <ol class="text-xs space-y-2 pl-4 list-decimal marker:text-pj-blue-main marker:font-bold">
+                    <li>บอกประเภทงานที่ต้องการทำ เช่น ป้ายบัญชี ริชเมนู เป็นต้น</li>
+                    <li>บอกจำนวนงาน</li>
+                    <li>เลือกบล็อก ฟอนต์ ตูน ของตกแต่งในลิงก์ (ลิงก์ที่ไว้เลือกของต่าง ๆ ) ได้เลย</li>
+                    <li>แจ้งรายละเอียดคำให้ชัดเจน ส่งเป็นแบบข้อความเท่านั้น รบกวนตรวจสอบข้อความก่อนน้า</li>
+                    <li>รอทางร้านรวมยอดและรอคอนเฟิร์มคิวงาน</li>
+                </ol>
+                <div class="mt-3 bg-pj-yellow-light/60 p-2 rounded text-[10px] text-pj-blue-dark/80">
+                    <span class="font-bold">หมายเหตุ:</span> ลูกค้าต้องการอะไรพิมพ์บอกให้ชัดเจน เพราะทางร้านจะทำตามข้อความบรีพที่ลูกค้าแจ้งมา
+                </div>
+            </div>
+
+            <div class="shape-nota bg-pj-blue-dark text-pj-white p-5 shadow-sm overflow-hidden">
+                <svg class="absolute -bottom-4 -left-4 w-16 h-16 text-pj-blue-light opacity-10 transform -rotate-12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg class="absolute top-4 right-4 w-5 h-5 text-pj-yellow-main opacity-80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+
+                <div class="flex items-center gap-2 mb-3 border-b border-pj-white/20 pb-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <h3 class="font-eng text-lg font-bold uppercase tracking-widest">Rules</h3>
+                </div>
+                <ul class="text-xs space-y-2 font-light">
+                    <li class="flex items-start gap-2"><svg class="w-3 h-3 mt-0.5 shrink-0 text-pj-yellow-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> โอนเงินแล้วไม่คืนเงินทุกกรณี ไม่ว่าจะราคาเริ่มต้น หรือ จ่ายเต็มแล้ว</li>
+                    <li class="flex items-start gap-2"><svg class="w-3 h-3 mt-0.5 shrink-0 text-pj-yellow-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ยกเลิกหลังตรวจงานแล้ว ไม่คืนเงิน และส่งงานให้ตามปกติ</li>
+                    <li class="flex items-start gap-2"><svg class="w-3 h-3 mt-0.5 shrink-0 text-pj-yellow-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ทางร้านไม่รับทำตามแบบของงานร้านอื่น</li>
+                    <li class="flex items-start gap-2"><svg class="w-3 h-3 mt-0.5 shrink-0 text-pj-yellow-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> งดตัดป้ายร้านอื่นมาทำกับร้านเค้า</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Social Media Contact Footer -->
+        <footer class="mx-4 mb-8 text-center">
+            <p class="text-xs text-pj-blue-dark/60 font-medium">Contact & Follow Us 🌸</p>
+            <div class="flex justify-center items-center gap-3 mt-3">
+                <a href="#" class="instagram-link-btn p-2 bg-pj-pink rounded-full text-white">Instagram</a>
+                <a href="https://facebook.com" target="_blank" class="p-3 bg-pj-white border-2 border-pj-pink/50 text-pj-blue-dark rounded-2xl shadow-sm hover:scale-110 transition-transform font-bold text-xs flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook
+                </a>
+                <a href="https://line.me" target="_blank" class="p-3 bg-pj-white border-2 border-pj-pink/50 text-pj-blue-dark rounded-2xl shadow-sm hover:scale-110 transition-transform font-bold text-xs flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span> LINE Official
+                </a>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Modal: Check Queue View (คิวงาน) -->
+    <div id="modal-queue-view" class="modal inactive fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div class="modal-content bg-pj-bg border-4 border-pj-pink rounded-3xl p-6 w-full max-w-md shadow-2xl relative max-h-[85vh] overflow-y-auto">
+            <button onclick="closeModal('modal-queue-view')" class="absolute top-4 right-4 text-pj-blue-dark hover:text-pj-blue-main bg-pj-white rounded-full p-1 border border-pj-pink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="text-center mb-6">
+                <span class="bg-pj-yellow-main text-pj-blue-dark text-xs font-bold font-eng px-3 py-1 rounded-full border border-white">ORDER QUEUE</span>
+                <h3 class="text-2xl font-bold text-pj-blue-dark mt-2 flex items-center justify-center gap-2">
+                    รายการคิวงาน 📋✨
+                </h3>
+                <p class="text-xs text-pj-blue-dark/70">เช็คสถานะและรายละเอียดคำสั่งซื้อ</p>
+            </div>
+
+            <!-- Table/List of Queue items -->
+            <div id="queue-display-list" class="space-y-3">
+                <!-- JS Populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Admin Auth (รหัสผ่าน) -->
+    <div id="modal-admin-auth" class="modal inactive fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div class="modal-content bg-pj-white border-4 border-pj-pink rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+            <button onclick="closeModal('modal-admin-auth')" class="absolute top-4 right-4 text-pj-blue-dark hover:text-pj-blue-main bg-pj-bg rounded-full p-1 border border-pj-pink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-pj-pink/30 rounded-full flex items-center justify-center mx-auto text-pj-blue-main mb-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-pj-blue-dark">เข้าสู่ระบบหลังบ้าน 🎀</h3>
+                <p class="text-xs text-pj-blue-dark/70">สำหรับแอดมินจัดการข้อมูลร้าน</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-pj-blue-dark mb-1">รหัสผ่านหลังบ้าน</label>
+                    <input type="password" id="admin-pass-input" placeholder="กรอกรหัสผ่าน ( default: 1234 )" class="w-full bg-pj-bg border-2 border-pj-pink/50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-pj-blue-main">
+                </div>
+                <button type="submit" class="w-full bg-pj-pink hover:bg-pj-blue-main text-pj-white font-bold py-2.5 rounded-xl shadow-md transition-colors text-sm">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Admin Dashboard (จัดการข้อมูลหลังบ้าน) -->
+    <div id="modal-admin-dash" class="modal inactive fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div class="modal-content bg-pj-bg border-4 border-pj-pink rounded-3xl p-6 w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-admin-dash')" class="absolute top-4 right-4 text-pj-blue-dark hover:text-pj-blue-main bg-pj-white rounded-full p-1 border border-pj-pink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            
+            <div class="text-center mb-6">
+                <span class="bg-pj-yellow-main text-pj-blue-dark text-xs font-bold font-eng px-3 py-1 rounded-full border border-white">ADMIN MANAGEMENT</span>
+                <h3 class="text-2xl font-bold text-pj-blue-dark mt-2">ระบบจัดการหลังบ้าน 🛠️</h3>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex border-b-2 border-pj-pink/40 mb-4 gap-1 text-[11px] font-bold">
+                <button onclick="switchAdminTab('images')" id="tab-btn-images" class="flex-1 py-2 rounded-t-xl bg-pj-pink text-pj-white transition-colors">🖼️ รูปภาพ</button>
+                <button onclick="switchAdminTab('queue')" id="tab-btn-queue" class="flex-1 py-2 rounded-t-xl bg-pj-white text-pj-blue-dark transition-colors">📝 คิวงาน</button>
+                <button onclick="switchAdminTab('password')" id="tab-btn-password" class="flex-1 py-2 rounded-t-xl bg-pj-white text-pj-blue-dark transition-colors">🔑 เปลี่ยนรหัส</button>
+            </div>
+
+            <!-- Tab content 1: Image Upload (บันทึกลง LocalStorage ป้องกันรูปหาย) -->
+            <div id="admin-tab-images" class="space-y-4">
+                <p class="text-xs text-pj-blue-dark/80 bg-pj-yellow-light/60 p-2.5 rounded-xl border border-pj-yellow-main">
+                    💡 **คำแนะนำการอัปโหลด:** ไฟล์รูปจะถูกแปลงเป็น Base64 แล้วบันทึกลงในเบราว์เซอร์ (LocalStorage) ทำให้รูปขึ้นตลอดแม้เข้าเว็บใหม่!
+                </p>
+
+                <!-- Logo Edit -->
+                <div class="bg-pj-white p-3 rounded-2xl border border-pj-pink/40 space-y-2">
+                    <label class="block text-xs font-bold text-pj-blue-dark">1. รูปโลโก้ (Header Logo)</label>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-logo-preview" class="w-12 h-12 rounded-lg object-cover border border-pj-pink" src="https://placehold.co/150x150/ffb3c6/ffffff?text=Miori">
+                        <label class="cursor-pointer bg-pj-pink hover:bg-pj-blue-main text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                            เลือกรูปโลโก้ 🌸
+                            <input type="file" accept="image/*" class="cute-file-input" onchange="handleFileUpload(event, 'site-logo-img', 'admin-logo-preview', 'miori_logo')">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Banner Edit -->
+                <div class="bg-pj-white p-3 rounded-2xl border border-pj-pink/40 space-y-2">
+                    <label class="block text-xs font-bold text-pj-blue-dark">2. รูปแบนเนอร์ (Banner 2400x800)</label>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-banner-preview" class="w-20 h-8 rounded-lg object-cover border border-pj-pink" src="https://placehold.co/2400x800/ffccd5/705446?text=Miori+Shop+Banner">
+                        <label class="cursor-pointer bg-pj-pink hover:bg-pj-blue-main text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                            เลือกรูปแบนเนอร์ 🎨
+                            <input type="file" accept="image/*" class="cute-file-input" onchange="handleFileUpload(event, 'site-banner-img', 'admin-banner-preview', 'miori_banner')">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Product 1 Edit -->
+                <div class="bg-pj-white p-3 rounded-2xl border border-pj-pink/40 space-y-2">
+                    <label class="block text-xs font-bold text-pj-blue-dark">3. รูปสินค้า Block (ช่องที่ 1)</label>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-prod1-preview" class="w-12 h-12 rounded-lg object-cover border border-pj-pink" src="https://placehold.co/1280x1280/ffb3c6/ffffff?text=Block">
+                        <label class="cursor-pointer bg-pj-pink hover:bg-pj-blue-main text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                            เลือกรูป Block 📦
+                            <input type="file" accept="image/*" class="cute-file-input" onchange="handleFileUpload(event, 'prod-img-1', 'admin-prod1-preview', 'miori_prod1')">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Product 2 Edit -->
+                <div class="bg-pj-white p-3 rounded-2xl border border-pj-pink/40 space-y-2">
+                    <label class="block text-xs font-bold text-pj-blue-dark">4. รูปสินค้า Toon (ช่องที่ 2)</label>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-prod2-preview" class="w-12 h-12 rounded-lg object-cover border border-pj-pink" src="https://placehold.co/1280x1280/ffe066/705446?text=Toon">
+                        <label class="cursor-pointer bg-pj-pink hover:bg-pj-blue-main text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                            เลือกรูป Toon 🐣
+                            <input type="file" accept="image/*" class="cute-file-input" onchange="handleFileUpload(event, 'prod-img-2', 'admin-prod2-preview', 'miori_prod2')">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Product 3 Edit -->
+                <div class="bg-pj-white p-3 rounded-2xl border border-pj-pink/40 space-y-2">
+                    <label class="block text-xs font-bold text-pj-blue-dark">5. รูปสินค้า Descor (ช่องที่ 3)</label>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-prod3-preview" class="w-12 h-12 rounded-lg object-cover border border-pj-pink" src="https://placehold.co/1280x1280/ffccd5/705446?text=Descor">
+                        <label class="cursor-pointer bg-pj-pink hover:bg-pj-blue-main text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                            เลือกรูป Descor 🎀
+                            <input type="file" accept="image/*" class="cute-file-input" onchange="handleFileUpload(event, 'prod-img-3', 'admin-prod3-preview', 'miori_prod3')">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab content 2: Queue Management -->
+            <div id="admin-tab-queue" class="space-y-4 hidden">
+                <!-- Add New Queue Form -->
+                <form onsubmit="addQueueItem(event)" class="bg-pj-white p-4 rounded-2xl border-2 border-pj-pink/50 space-y-3">
+                    <h4 class="font-bold text-sm text-pj-blue-dark flex items-center gap-1">
+                        ➕ เพิ่มรายการคิวงานใหม่
+                    </h4>
+                    <div>
+                        <label class="block text-xs font-bold text-pj-blue-dark mb-1">ชื่อลูกค้า / ช่องทางสั่งซื้อ</label>
+                        <input type="text" id="add-q-name" required placeholder="เช่น คุณมิว (LINE)" class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-pj-blue-main">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-pj-blue-dark mb-1">สั่งงานอะไร (รายละเอียดงาน)</label>
+                        <textarea id="add-q-detail" required rows="2" placeholder="เช่น ป้ายแนวน่ารัก 1 ป้าย + ลายน้ำ 2 ลาย" class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-pj-blue-main"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-pj-blue-dark mb-1">สถานะงาน</label>
+                            <select id="add-q-status" class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none">
+                                <option value="รอทำคิวงาน">⏳ รอทำคิวงาน</option>
+                                <option value="กำลังดำเนินการ">🎨 กำลังดำเนินการ</option>
+                                <option value="เสร็จเรียบร้อย">✅ เสร็จเรียบร้อย</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-pj-blue-dark mb-1">กำหนดส่ง / โน๊ต</label>
+                            <input type="text" id="add-q-note" placeholder="เช่น ส่งเย็นนี้" class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-pj-blue-main">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-pj-yellow-main hover:bg-yellow-400 text-pj-blue-dark font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">
+                        + บันทึกคิวใหม่
+                    </button>
+                </form>
+
+                <!-- Manage Current Queue List -->
+                <div>
+                    <h4 class="font-bold text-xs text-pj-blue-dark mb-2">📋 รายการคิวปัจจุบัน</h4>
+                    <div id="admin-queue-manage-list" class="space-y-2">
+                        <!-- JS Populated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab content 3: Change Admin Password -->
+            <div id="admin-tab-password" class="space-y-4 hidden">
+                <form onsubmit="handleChangePassword(event)" class="bg-pj-white p-4 rounded-2xl border-2 border-pj-pink/50 space-y-3">
+                    <h4 class="font-bold text-sm text-pj-blue-dark flex items-center gap-1">🔑 เปลี่ยนรหัสผ่านหลังบ้าน</h4>
+                    <div>
+                        <label class="block text-xs font-bold text-pj-blue-dark mb-1">รหัสผ่านปัจจุบัน</label>
+                        <input type="password" id="curr-pass-input" required class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-pj-blue-main">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-pj-blue-dark mb-1">รหัสผ่านใหม่</label>
+                        <input type="password" id="new-pass-input" required class="w-full bg-pj-bg border border-pj-pink/50 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-pj-blue-main">
+                    </div>
+                    <button type="submit" class="w-full bg-pj-pink hover:bg-pj-blue-main text-pj-white font-bold py-2 rounded-xl text-xs transition-colors shadow-md">
+                        บันทึกรหัสผ่านใหม่
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Handling LocalStorage & Dynamic Updates -->
+    <script>
+        // Modal Control
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('inactive');
+                el.classList.add('active');
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('active');
+                el.classList.add('inactive');
+            }
+        }
+
+        function openAdminAuthModal() {
+            openModal('modal-admin-auth');
+        }
+
+        function getAdminPassword() {
+            return localStorage.getItem('miori_admin_pass') || '1234';
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById('admin-pass-input').value;
+            if(pass === getAdminPassword()) {
+                closeModal('modal-admin-auth');
+                document.getElementById('admin-pass-input').value = '';
+                openModal('modal-admin-dash');
+                initAdminPreviews();
+                renderAdminQueueList();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้องค่ะ!');
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            const imgTab = document.getElementById('admin-tab-images');
+            const qTab = document.getElementById('admin-tab-queue');
+            const passTab = document.getElementById('admin-tab-password');
+            const btnImg = document.getElementById('tab-btn-images');
+            const btnQ = document.getElementById('tab-btn-queue');
+            const btnPass = document.getElementById('tab-btn-password');
+
+            imgTab.classList.add('hidden');
+            qTab.classList.add('hidden');
+            passTab.classList.add('hidden');
+
+            btnImg.className = "flex-1 py-2 rounded-t-xl bg-pj-white text-pj-blue-dark transition-colors";
+            btnQ.className = "flex-1 py-2 rounded-t-xl bg-pj-white text-pj-blue-dark transition-colors";
+            btnPass.className = "flex-1 py-2 rounded-t-xl bg-pj-white text-pj-blue-dark transition-colors";
+
+            if(tabName === 'images') {
+                imgTab.classList.remove('hidden');
+                btnImg.className = "flex-1 py-2 rounded-t-xl bg-pj-pink text-pj-white transition-colors";
+            } else if(tabName === 'queue') {
+                qTab.classList.remove('hidden');
+                btnQ.className = "flex-1 py-2 rounded-t-xl bg-pj-pink text-pj-white transition-colors";
+            } else if(tabName === 'password') {
+                passTab.classList.remove('hidden');
+                btnPass.className = "flex-1 py-2 rounded-t-xl bg-pj-pink text-pj-white transition-colors";
+            }
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const curr = document.getElementById('curr-pass-input').value;
+            const newP = document.getElementById('new-pass-input').value;
+
+            if (curr !== getAdminPassword()) {
+                alert('รหัสผ่านปัจจุบันไม่ถูกต้อง');
+                return;
+            }
+            localStorage.setItem('miori_admin_pass', newP);
+            alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้วค่ะ');
+            document.getElementById('curr-pass-input').value = '';
+            document.getElementById('new-pass-input').value = '';
+        }
+
+        // Image Handler (Reading and Saving as Base64 to LocalStorage)
+        function handleFileUpload(event, targetImgId, previewImgId, storageKey) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Src = e.target.result;
+                
+                // Update Main UI Image
+                const mainImg = document.getElementById(targetImgId);
+                if(mainImg) mainImg.src = base64Src;
+
+                // Update Admin Preview
+                const prevImg = document.getElementById(previewImgId);
+                if(prevImg) prevImg.src = base64Src;
+
+                // Save permanently in LocalStorage
+                try {
+                    localStorage.setItem(storageKey, base64Src);
+                    alert('อัปโหลดและบันทึกรูปภาพเรียบร้อยแล้วค่ะ!');
+                } catch(err) {
+                    alert('ไม่สามารถบันทึกรูปภาพขนาดใหญ่เกินไปลงในเบราว์เซอร์ได้ กรุณาย่อขนาดรูปภาพลงเล็กน้อยนะคะ');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Load saved images from LocalStorage on page load
+        function loadSavedImages() {
+            const imageMap = [
+                { id: 'site-logo-img', key: 'miori_logo' },
+                { id: 'site-banner-img', key: 'miori_banner' },
+                { id: 'prod-img-1', key: 'miori_prod1' },
+                { id: 'prod-img-2', key: 'miori_prod2' },
+                { id: 'prod-img-3', key: 'miori_prod3' }
+            ];
+
+            imageMap.forEach(item => {
+                const savedData = localStorage.getItem(item.key);
+                if(savedData) {
+                    const el = document.getElementById(item.id);
+                    if(el) el.src = savedData;
+                }
+            });
+        }
+
+        function initAdminPreviews() {
+            const imageMap = [
+                { mainId: 'site-logo-img', prevId: 'admin-logo-preview' },
+                { mainId: 'site-banner-img', prevId: 'admin-banner-preview' },
+                { mainId: 'prod-img-1', prevId: 'admin-prod1-preview' },
+                { mainId: 'prod-img-2', prevId: 'admin-prod2-preview' },
+                { mainId: 'prod-img-3', prevId: 'admin-prod3-preview' }
+            ];
+
+            imageMap.forEach(item => {
+                const main = document.getElementById(item.mainId);
+                const prev = document.getElementById(item.prevId);
+                if(main && prev) prev.src = main.src;
+            });
+        }
+
+        // Queue Management Data Store
+        let defaultQueueData = [
+            { id: 1, name: 'คุณมินท์ (LINE)', detail: 'ทำป้ายแนวน่ารัก 2 ป้าย + ลายน้ำ', status: 'กำลังดำเนินการ', note: 'ส่งวันนี้ 18:00 น.' },
+            { id: 2, name: 'คุณกิ๊ฟ', detail: 'ทำป้ายเรทราคา 1 ป้าย', status: 'รอทำคิวงาน', note: 'คิวที่ 2' }
+        ];
+
+        function getQueueData() {
+            const saved = localStorage.getItem('miori_queue_data');
+            if(saved) {
+                try { return JSON.parse(saved); } catch(e) {}
+            }
+            return defaultQueueData;
+        }
+
+        function saveQueueData(data) {
+            localStorage.setItem('miori_queue_data', JSON.stringify(data));
+            renderUserQueueList();
+            renderAdminQueueList();
+        }
+
+        function renderUserQueueList() {
+            const container = document.getElementById('queue-display-list');
+            if(!container) return;
+
+            const list = getQueueData();
+            if(list.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-pj-blue-dark/60 bg-pj-white rounded-2xl border border-pj-pink/30">
+                        🌸 ยังไม่มีรายการคิวงานในขณะนี้
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = list.map((item, index) => {
+                let statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-300';
+                if(item.status === 'กำลังดำเนินการ') statusBadgeClass = 'bg-blue-100 text-blue-700 border-blue-300 animate-pulse';
+                if(item.status === 'เสร็จเรียบร้อย') statusBadgeClass = 'bg-green-100 text-green-700 border-green-300';
+
+                return `
+                    <div class="bg-pj-white p-3.5 rounded-2xl border-2 border-pj-pink/40 shadow-sm relative space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs text-pj-blue-dark flex items-center gap-1">
+                                <span class="w-5 h-5 rounded-full bg-pj-pink text-pj-white flex items-center justify-center text-[10px]">${index + 1}</span>
+                                ${escapeHtml(item.name)}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass}">
+                                ${escapeHtml(item.status)}
+                            </span>
+                        </div>
+                        <div class="bg-pj-bg p-2 rounded-xl border border-pj-pink/20 text-xs text-pj-blue-dark">
+                            <span class="font-bold text-pj-blue-main">งานที่สั่ง:</span> ${escapeHtml(item.detail)}
+                        </div>
+                        ${item.note ? `<p class="text-[10px] text-pj-blue-dark/70 text-right">📌 ${escapeHtml(item.note)}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAdminQueueList() {
+            const container = document.getElementById('admin-queue-manage-list');
+            if(!container) return;
+
+            const list = getQueueData();
+            container.innerHTML = list.map((item) => `
+                <div class="bg-pj-white p-3 rounded-xl border border-pj-pink/40 text-xs space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-pj-blue-dark">${escapeHtml(item.name)}</span>
+                        <button onclick="deleteQueueItem(${item.id})" class="text-red-500 hover:text-red-700 text-[10px] bg-red-50 px-2 py-0.5 rounded-md border border-red-200">
+                            🗑️ ลบ
+                        </button>
+                    </div>
+                    <div class="text-pj-blue-dark/80">
+                        <span class="font-bold">รายละเอียด:</span> ${escapeHtml(item.detail)}
+                    </div>
+                    <div class="flex gap-2">
+                        <select onchange="updateQueueStatus(${item.id}, this.value)" class="bg-pj-bg border border-pj-pink/50 rounded-lg text-[10px] font-bold p-1">
+                            <option value="รอทำคิวงาน" ${item.status === 'รอทำคิวงาน' ? 'selected' : ''}>⏳ รอทำคิวงาน</option>
+                            <option value="กำลังดำเนินการ" ${item.status === 'กำลังดำเนินการ' ? 'selected' : ''}>🎨 กำลังดำเนินการ</option>
+                            <option value="เสร็จเรียบร้อย" ${item.status === 'เสร็จเรียบร้อย' ? 'selected' : ''}>✅ เสร็จเรียบร้อย</option>
+                        </select>
+                        <span class="text-[10px] text-pj-blue-dark/60 self-center">โน๊ต: ${escapeHtml(item.note || '-')}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addQueueItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('add-q-name').value;
+            const detail = document.getElementById('add-q-detail').value;
+            const status = document.getElementById('add-q-status').value;
+            const note = document.getElementById('add-q-note').value;
+
+            const list = getQueueData();
+            list.push({
+                id: Date.now(),
+                name: name,
+                detail: detail,
+                status: status,
+                note: note
+            });
+
+            saveQueueData(list);
+
+            // Reset Form
+            document.getElementById('add-q-name').value = '';
+            document.getElementById('add-q-detail').value = '';
+            document.getElementById('add-q-note').value = '';
+        }
+
+        function updateQueueStatus(id, newStatus) {
+            const list = getQueueData();
+            const item = list.find(i => i.id === id);
+            if(item) {
+                item.status = newStatus;
+                saveQueueData(list);
+            }
+        }
+
+        function deleteQueueItem(id) {
+            if(confirm('ต้องการลบคิวนี้ใช่ไหมคะ?')) {
+                let list = getQueueData();
+                list = list.filter(i => i.id !== id);
+                saveQueueData(list);
+            }
+        }
+
+        function escapeHtml(str) {
+            if(!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Music Toggle Helper
+        let isPlaying = false;
+        function toggleMusic() {
+            const dot = document.getElementById('music-status-dot');
+            isPlaying = !isPlaying;
+            if(isPlaying) {
+                dot.classList.replace('bg-gray-400', 'bg-green-500');
+            } else {
+                dot.classList.replace('bg-green-500', 'bg-gray-400');
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedImages();
+            renderUserQueueList();
+        });
+    </script>
+</body>
+</html>
